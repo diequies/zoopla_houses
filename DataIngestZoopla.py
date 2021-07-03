@@ -12,6 +12,7 @@ import pandas as pd
 import math
 import json
 import time
+import re
 
 def number_of_search_pages(url):
     
@@ -32,7 +33,6 @@ def number_of_search_pages(url):
         house_num = int(pages[0])
         pages = math.ceil(int(pages[0])/25)
         return pd.Series((pages, house_num))
-    
 
 def get_borough_url(link1,link2):
     
@@ -46,7 +46,6 @@ def get_borough_url(link1,link2):
     url = 'https://www.zoopla.co.uk/for-sale/property/' + link1 + '/?page_size=25&q='\
     + link2 + '&radius=0&results_sort=newest_listings&pn=1'
     return url
-
 
 def get_main_house_details(url_initial, pages, house_num):
     
@@ -292,35 +291,116 @@ def get_house_inner_details(link,listed,borough):
                             columns = columns)
     return df_result
 
-def data_wrangle(data):
+def sq_ft_features_find(floor_size_series):
     
-    """
-    Function to modify the raw features to a final set of usable features to
-    input into the SQL database.
+    '''
     
-    """
+    Function to extract from house features any string that contains sq ft and
+    outputs the value in sq m
     
-    data['floorArea'].fillna(value = np.nan, inplace = True)
-    data['floor_area_amount'] = data['floorArea'].apply(lambda x: x['value'] if type(x) == dict else np.nan)
-    data['floor_area_units'] = data['floorArea'].apply(lambda x: x['unitsLabel'] if type(x) == dict else np.nan)
-    data['floor_area_msq'] = data.apply(lambda x: (round(x['floor_area_amount']/10.7639))\
-                                        if (x['floor_area_units'] == 'sq. ft') else x['floor_area_amount'],
-                                        axis = 1)
-    data['numBedrooms'] = data['RoomCount'].apply(lambda x: 0\
-                                                  if pd.isnull(x['numBedrooms']) else x['numBedrooms'])
-    data['numBathrooms'] = data['RoomCount'].apply(lambda x: 0\
-                                                  if pd.isnull(x['numBathrooms']) else x['numBathrooms'])
-    data['numLivingRooms'] = data['RoomCount'].apply(lambda x: 0\
-                                                  if pd.isnull(x['numLivingRooms']) else x['numLivingRooms'])
-    data['firstPublished'] = data['priceHistory'].apply(lambda x: None if pd.isnull(x) else x['firstPublished'])
-    data['lastSale'] = data['priceHistory'].apply(lambda x: None if pd.isnull(x) else x['lastSale'])
-    data['firstPublishedDate'] = data['firstPublished'].apply(lambda x: None if pd.isnull(x)\
-                                                              else x['firstPublishedDate'])
-    data['firstPublishedPrice'] = data['firstPublished'].apply(lambda x: None if pd.isnull(x)\
-                                                              else x['priceLabel'])
-    data['lastSaleDate'] = data['lastSale'].apply(lambda x: None if pd.isnull(x) else x['date'])
-    data['lastSaleNewBuild'] = data['lastSale'].apply(lambda x: None if pd.isnull(x) else x['newBuild'])
-    data['lastSalePrice'] = data['lastSale'].apply(lambda x: None if pd.isnull(x) else x['price'])
-    data['firstPublishedPrice'] = data['firstPublishedPrice'].apply(lambda x:None if pd.isnull(x)\
-                                                                    else int(x.replace(',','').split('£')[-1]))
-    return data
+    '''
+    sq_ft = ''
+    sq_m = []
+    flag = 0
+    if isinstance(floor_size_series, list):
+        for i in range(0, len(floor_size_series)):
+            if ('sq ft' in floor_size_series[i].lower()) or ('sqft' in floor_size_series[i].lower()) or\
+            ('ft2' in floor_size_series[i].lower()):
+                sq_ft = floor_size_series[i].lower()
+                sq_ft_parsed = extract_sq_ft(sq_ft)
+                if pd.isnull(sq_ft_parsed):
+                    sq_m = None
+                elif isinstance(sq_ft_parsed, list):
+                    sq_ft_parsed_max = max(list(np.array(sq_ft_parsed).astype(float)))
+                    sq_m = sq_m.append(round(float(sq_ft_parsed_max)/10.7639))
+                    flag = 1
+                elif isinstance(sq_ft_parsed, str):
+                    sq_m = sq_m.append(round(float(sq_ft_parsed)/10.7639))
+                    flag = 1
+        if flag == 0:
+            sq_m = None
+        elif isinstance(sq_m, list):
+            sq_m = round(max(list(np.array(sq_m).astype(float))))            
+    else:
+        sq_m = None
+    return sq_m
+
+def sq_m_features_find(floor_size_series):
+    
+    '''
+    
+    Function to extract from house features any string that contains sq m
+    
+    '''
+    sq_m_original = ''
+    sq_m = []
+    flag = 0
+    if isinstance(floor_size_series, list):
+        for i in range(0, len(floor_size_series)):
+            if ('sq m' in floor_size_series[i].lower()) or ('sqm' in floor_size_series[i].lower()) or\
+                ('m2' in floor_size_series[i].lower()):
+                sq_m_original = floor_size_series[i].lower()
+                flag = 1
+                sq_m = sq_m.append(extract_sq_m(sq_m_original))
+        if flag == 0:
+            sq_m = None
+        elif isinstance(sq_m, list):
+            sq_m = round(max(list(np.array(sq_m).astype(float))))  
+    else:
+        sq_m = None
+    return sq_m
+
+def extract_sq_ft(string_list):
+    
+    '''
+    
+    Function to extract from the string, the value of sq ft.
+    
+    '''
+    sq_ft_string = None
+    
+    patterns = [r'([\d,.]+)sqft',
+                r'([\d,.]+)sq ft',
+                r'([\d,.]+)sq_ft',
+                r'([\d,.]+) sqft',
+                r'([\d,.]+) sq ft',
+                r'([\d,.]+) sq_ft',
+                r'([\d,.]+)_sqft',
+                r'([\d,.]+)_sq ft',
+                r'([\d,.]+)_sq_ft',
+                r'([\d,.]+)ft2',
+                r'([\d,.]+) ft2',
+                r'([\d,.]+)_ft2']
+    for pat in patterns:
+        if re.search(pat, string_list) != None:
+            sq_ft_string = re.search(pat, string_list)
+            break
+    return sq_ft_string
+        
+def extract_sq_m(string_list):
+    
+    '''
+    
+    Function to extract from the string, the value of sq m.
+    
+    '''
+    sq_m_string = None
+    
+    patterns = [r'([\d,.]+)sqm',
+                r'([\d,.]+)sq m',
+                r'([\d,.]+)sq_m',
+                r'([\d,.]+) sqm',
+                r'([\d,.]+) sq m',
+                r'([\d,.]+) sq_m',
+                r'([\d,.]+)_sqm',
+                r'([\d,.]+)_sq m',
+                r'([\d,.]+)_sq_m',
+                r'([\d,.]+)m2',
+                r'([\d,.]+) m2',
+                r'([\d,.]+)_m2']
+    
+    for pat in patterns:
+        if re.search(pat, string_list) != None:
+            sq_m_string = re.search(pat, string_list)
+            break
+    return sq_m_string
