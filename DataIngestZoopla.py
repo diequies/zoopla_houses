@@ -13,6 +13,7 @@ import math
 import json
 import time
 import re
+from fastnumbers import fast_real
 
 def number_of_search_pages(url):
     
@@ -299,31 +300,29 @@ def sq_ft_features_find(floor_size_series):
     outputs the value in sq m
     
     '''
-    sq_ft = ''
-    sq_m = []
-    flag = 0
-    if isinstance(floor_size_series, list):
-        for i in range(0, len(floor_size_series)):
-            if ('sq ft' in floor_size_series[i].lower()) or ('sqft' in floor_size_series[i].lower()) or\
-            ('ft2' in floor_size_series[i].lower()):
-                sq_ft = floor_size_series[i].lower()
-                sq_ft_parsed = extract_sq_ft(sq_ft)
-                if pd.isnull(sq_ft_parsed):
-                    sq_m = None
-                elif isinstance(sq_ft_parsed, list):
-                    sq_ft_parsed_max = max(list(np.array(sq_ft_parsed).astype(float)))
-                    sq_m = sq_m.append(round(float(sq_ft_parsed_max)/10.7639))
-                    flag = 1
-                elif isinstance(sq_ft_parsed, str):
-                    sq_m = sq_m.append(round(float(sq_ft_parsed)/10.7639))
-                    flag = 1
-        if flag == 0:
+    sq_ft = extract_sq_ft(floor_size_series.lower())
+    sq_m = None
+    
+    if np.any(isinstance(sq_ft, list) and pd.notnull(sq_ft)):
+        sq_m = [custom_float(j.replace(',','_')) for i in sq_ft for j in i]
+        if np.any(pd.notnull(sq_m)):
+            if len(sq_m) == 1:
+                sq_m = round(sq_m[0]/10.7639)
+            elif len(sq_m) > 1:
+                sq_m = round(max(sq_m)/10.7639)
+        else:
             sq_m = None
-        elif isinstance(sq_m, list):
-            sq_m = round(max(list(np.array(sq_m).astype(float))))            
     else:
         sq_m = None
+        
     return sq_m
+
+def custom_float(string):
+    try:
+        output = float(string)
+    except ValueError:
+        output = 0
+    return output
 
 def sq_m_features_find(floor_size_series):
     
@@ -332,22 +331,21 @@ def sq_m_features_find(floor_size_series):
     Function to extract from house features any string that contains sq m
     
     '''
-    sq_m_original = ''
-    sq_m = []
-    flag = 0
-    if isinstance(floor_size_series, list):
-        for i in range(0, len(floor_size_series)):
-            if ('sq m' in floor_size_series[i].lower()) or ('sqm' in floor_size_series[i].lower()) or\
-                ('m2' in floor_size_series[i].lower()):
-                sq_m_original = floor_size_series[i].lower()
-                flag = 1
-                sq_m = sq_m.append(extract_sq_m(sq_m_original))
-        if flag == 0:
+    sq_m_temp = extract_sq_m(floor_size_series.lower())
+    sq_m = None
+    
+    if np.any(isinstance(sq_m_temp, list) and pd.notnull(sq_m_temp)):
+        sq_m = [custom_float(j.replace(',','_')) for i in sq_m_temp for j in i]
+        if np.any(pd.notnull(sq_m)):
+            if len(sq_m) == 1:
+                sq_m = round(sq_m[0]/10.7639)
+            elif len(sq_m) > 1:
+                sq_m = round(max(sq_m)/10.7639)
+        else:
             sq_m = None
-        elif isinstance(sq_m, list):
-            sq_m = round(max(list(np.array(sq_m).astype(float))))  
     else:
         sq_m = None
+        
     return sq_m
 
 def extract_sq_ft(string_list):
@@ -357,24 +355,59 @@ def extract_sq_ft(string_list):
     Function to extract from the string, the value of sq ft.
     
     '''
-    sq_ft_string = None
     
-    patterns = [r'([\d,.]+)sqft',
-                r'([\d,.]+)sq ft',
-                r'([\d,.]+)sq_ft',
-                r'([\d,.]+) sqft',
-                r'([\d,.]+) sq ft',
-                r'([\d,.]+) sq_ft',
-                r'([\d,.]+)_sqft',
-                r'([\d,.]+)_sq ft',
-                r'([\d,.]+)_sq_ft',
-                r'([\d,.]+)ft2',
-                r'([\d,.]+) ft2',
-                r'([\d,.]+)_ft2']
-    for pat in patterns:
-        if re.search(pat, string_list) != None:
-            sq_ft_string = re.search(pat, string_list)
-            break
+    patterns = [r'([\d,.]+).sq.ft',
+                r'([\d,.]+).sq..ft',
+                r'([\d,.]+)sq.ft',
+                r'([\d,.]+)sq..ft',
+                r'([\d,.]+).sqft',
+                r'([\d,.]+)sqft',
+                r'[a-z]+([\d,.]+).sq.ft',
+                r'[a-z]+([\d,.]+).sq..ft',
+                r'[a-z]+.([\d,.]+)sq.ft',
+                r'[a-z]+..([\d,.]+)sq.ft',
+                r'[a-z]+.([\d,.]+)sq..ft',
+                r'[a-z]+..([\d,.]+)sq..ft',
+                r'[a-z]+.([\d,.]+).sqft',
+                r'[a-z]+..([\d,.]+).sqft',
+                r'[a-z]+([\d,.]+)sq.ft',
+                r'[a-z]+([\d,.]+)sq..ft',
+                r'[a-z]+([\d,.]+).sqft',
+                r'[a-z]+.([\d,.]+)sqft',
+                r'[a-z]+..([\d,.]+)sqft',
+                r'[a-z]+([\d,.]+)sqft',
+                r'[a-z]+.([\d,.]+).sq.ft',
+                r'[a-z]+..([\d,.]+).sq.ft',
+                r'[a-z]+.([\d,.]+).sq..ft',
+                r'[a-z]+..([\d,.]+).sq..ft',
+                r'([\d,.]+).[a-z]+.sq.ft',
+                r'([\d,.]+).[a-z]+..sq.ft',
+                r'([\d,.]+).[a-z]+.sq..ft',
+                r'([\d,.]+).[a-z]+..sq..ft',
+                r'([\d,.]+)[a-z]+.sq.ft',
+                r'([\d,.]+)[a-z]+..sq.ft',
+                r'([\d,.]+)[a-z]+.sq..ft',
+                r'([\d,.]+)[a-z]+..sq..ft',
+                r'([\d,.]+).[a-z]+sq.ft',
+                r'([\d,.]+).[a-z]+sq..ft',
+                r'([\d,.]+).[a-z]+.sqft',
+                r'([\d,.]+).[a-z]+..sqft',
+                r'([\d,.]+)[a-z]+sq.ft',
+                r'([\d,.]+)[a-z]+sq..ft',
+                r'([\d,.]+)[a-z]+.sqft',
+                r'([\d,.]+)[a-z]+..sqft',
+                r'([\d,.]+).[a-z]+sqft',
+                r'([\d,.]+)[a-z]+sqft'
+                r'([\d,.]+).square.feet',
+                r'[a-z]+([\d,.]+).square.feet',
+                r'[a-z]+.([\d,.]+).square.feet',
+                r'[a-z]+..([\d,.]+).square.feet',
+                r'([\d,.]+).[a-z]+.square.feet',
+                r'([\d,.]+).[a-z]+..square.feet']
+
+    sq_ft_string = [re.findall(pat, string_list) for pat in patterns 
+                    if re.findall(pat, string_list) != None]
+    
     return sq_ft_string
         
 def extract_sq_m(string_list):
@@ -384,23 +417,74 @@ def extract_sq_m(string_list):
     Function to extract from the string, the value of sq m.
     
     '''
-    sq_m_string = None
     
-    patterns = [r'([\d,.]+)sqm',
-                r'([\d,.]+)sq m',
-                r'([\d,.]+)sq_m',
-                r'([\d,.]+) sqm',
-                r'([\d,.]+) sq m',
-                r'([\d,.]+) sq_m',
-                r'([\d,.]+)_sqm',
-                r'([\d,.]+)_sq m',
-                r'([\d,.]+)_sq_m',
-                r'([\d,.]+)m2',
-                r'([\d,.]+) m2',
-                r'([\d,.]+)_m2']
+    patterns = [r'([\d,.]+).sq.m',
+                r'([\d,.]+).sq..m',
+                r'([\d,.]+)sq.m',
+                r'([\d,.]+)sq..m',
+                r'([\d,.]+).sqm',
+                r'([\d,.]+)sqm',
+                r'[a-z]+([\d,.]+).sq.m',
+                r'[a-z]+([\d,.]+).sq..m',
+                r'[a-z]+.([\d,.]+)sq.m',
+                r'[a-z]+..([\d,.]+)sq.m',
+                r'[a-z]+.([\d,.]+)sq..m',
+                r'[a-z]+..([\d,.]+)sq..m',
+                r'[a-z]+.([\d,.]+).sqm',
+                r'[a-z]+..([\d,.]+).sqm',
+                r'[a-z]+([\d,.]+)sq.m',
+                r'[a-z]+([\d,.]+)sq..m',
+                r'[a-z]+([\d,.]+).sqm',
+                r'[a-z]+.([\d,.]+)sqm',
+                r'[a-z]+..([\d,.]+)sqm',
+                r'[a-z]+([\d,.]+)sqm',
+                r'[a-z]+.([\d,.]+).sq.m',
+                r'[a-z]+..([\d,.]+).sq.m',
+                r'[a-z]+.([\d,.]+).sq..m',
+                r'[a-z]+..([\d,.]+).sq..m',
+                r'([\d,.]+).[a-z]+.sq.m',
+                r'([\d,.]+).[a-z]+..sq.m',
+                r'([\d,.]+).[a-z]+.sq..m',
+                r'([\d,.]+).[a-z]+..sq..m',
+                r'([\d,.]+)[a-z]+.sq.',
+                r'([\d,.]+)[a-z]+..sq.m',
+                r'([\d,.]+)[a-z]+.sq..m',
+                r'([\d,.]+)[a-z]+..sq..m',
+                r'([\d,.]+).[a-z]+sq.m',
+                r'([\d,.]+).[a-z]+sq..m',
+                r'([\d,.]+).[a-z]+.sqm',
+                r'([\d,.]+).[a-z]+..sqm',
+                r'([\d,.]+)[a-z]+sq.m',
+                r'([\d,.]+)[a-z]+sq..m',
+                r'([\d,.]+)[a-z]+.sqm',
+                r'([\d,.]+)[a-z]+..sqm',
+                r'([\d,.]+).[a-z]+sqm',
+                r'([\d,.]+)[a-z]+sqm'
+                r'([\d,.]+).square.meter',
+                r'[a-z]+([\d,.]+).square.meter',
+                r'[a-z]+.([\d,.]+).square.meter',
+                r'[a-z]+..([\d,.]+).square.meter',
+                r'([\d,.]+).[a-z]+.square.meter',
+                r'([\d,.]+).[a-z]+..square.meter']
     
-    for pat in patterns:
-        if re.search(pat, string_list) != None:
-            sq_m_string = re.search(pat, string_list)
-            break
+    sq_m_string = [re.findall(pat, string_list) for pat in patterns 
+                    if re.findall(pat, string_list) != None]
+    
     return sq_m_string
+
+def extract_feature(string, patterns):
+    
+    '''
+    
+    Function to extract from the string, any of feature.
+    
+    '''
+    
+    feature = None
+
+    for pat in patterns:
+        if re.search(pat, string.lower()) != None:
+            feature = re.search(pat, string).groups()[0]
+            break
+    
+    return feature
