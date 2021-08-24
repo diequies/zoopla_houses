@@ -46,3 +46,26 @@ def find_stations(lat,long):
             stations.append(station)
 #        stations = list(set(stations))
         return stations
+
+def closest_station(lat, long, data_stations_temp, index):
+    url_base = 'https://api.mapbox.com/directions/v5/mapbox/walking/'
+    token = 'pk.eyJ1IjoiZGllcXVpZXMiLCJhIjoiY2tyOGRwZzVuMndhajJvbW53bDJoNGVhZSJ9.YxoxeYN6lUM4IJ4cEjZQnw'
+    data_stations_temp['lat_dif'] = data_stations_temp['latitude'] - lat
+    data_stations_temp['long_dif'] = data_stations_temp['longitude'] - long
+    data_stations_temp['sqrt'] = ((data_stations_temp['lat_dif']**2) + (data_stations_temp['long_dif']**2))**0.5
+    data_stations_temp.sort_values('sqrt', inplace = True)
+    data_stations_temp.reset_index(drop = True, inplace = True)
+    data_stations_temp.drop(['lat_dif','long_dif','sqrt'], axis = 1)
+    duration = list()
+    for i in range(0,2):
+        url = url_base + str(long) + ',' + str(lat) + ';' + str(data_stations_temp.iloc[i]['longitude']) + ',' +\
+        str(data_stations_temp.iloc[i]['latitude']) + '?geometries=geojson&access_token=' + token
+        response = requests.get(url)
+        data = response.json()
+        duration.append(data['routes'][0]['legs'][0]['duration'])
+    idx_max = np.argmax(duration) - 1
+    closest_station = [data_stations_temp.iloc[idx_max]['name']]
+    closest_station.append(duration[idx_max])
+    time.sleep(1)
+    print(index)
+    return closest_station
