@@ -6,6 +6,7 @@ Created on Mon Jul 12 23:32:47 2021
 @author: diego
 """
 
+from json.decoder import JSONDecodeError
 import numpy as np
 import pandas as pd
 import requests
@@ -69,3 +70,23 @@ def closest_station(lat, long, data_stations_temp, index):
     time.sleep(1)
     print(index)
     return closest_station
+
+def pub_restaurant_count(latitude,longitude):
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_query = """[out:json];
+    (
+    node[amenity=pub](around:500,""" + str(latitude) + "," + str(longitude) + """);
+    node[amenity=restaurant](around:500,""" + str(latitude) + "," + str(longitude) + """);
+    );
+    out count;"""
+    try:
+        response = requests.get(overpass_url, 
+                                params={'data': overpass_query})
+        data = response.json()
+    except JSONDecodeError:
+        time.sleep(5)
+        response = requests.get(overpass_url, 
+                                params={'data': overpass_query})
+        data = response.json()
+    count = data['elements'][0]['tags']['nodes']
+    return int(count)
