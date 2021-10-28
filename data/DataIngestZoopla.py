@@ -126,154 +126,154 @@ def get_house_inner_details(link,listed,borough):
         parsed_json = json.loads(main_json.text)
         borough.append(borough)
         try:
-            agency_name.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            agency_name.append(parsed_json['props']['pageProps']['data']['listing']\
                            ['branch']['name'])
         except TypeError:
             agency_name.append(np.nan)
         except KeyError:
             agency_name.append(np.nan)
         try:
-            agency_phone.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            agency_phone.append(parsed_json['props']['pageProps']['data']['listing']\
                             ['branch']['phone'])
         except TypeError:
             agency_phone.append(np.nan)
         except KeyError:
             agency_phone.append(np.nan)
         try:
-            chain_free.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            chain_free.append(parsed_json['props']['pageProps']['data']['listing']\
                           ['adTargeting']['chainFree'])
         except TypeError:
             chain_free.append(np.nan)
         except KeyError:
             chain_free.append(np.nan)
         try:
-            address.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            address.append(parsed_json['props']['pageProps']['data']['listing']\
                        ['adTargeting']['displayAddress'])
         except TypeError:
             address.append(np.nan)
         except KeyError:
             address.append(np.nan)
         try:
-            isRetirementHome.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            isRetirementHome.append(parsed_json['props']['pageProps']['data']['listing']\
                                 ['adTargeting']['isRetirementHome'])
         except TypeError:
             isRetirementHome.append(np.nan)
         except KeyError:
             isRetirementHome.append(np.nan)
         try:
-            isSharedOwnership.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            isSharedOwnership.append(parsed_json['props']['pageProps']['data']['listing']\
                                  ['adTargeting']['isSharedOwnership'])
         except TypeError:
             isSharedOwnership.append(np.nan)
         except KeyError:
             isSharedOwnership.append(np.nan)
         try:
-            listingCondition.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            listingCondition.append(parsed_json['props']['pageProps']['data']['listing']\
                                 ['adTargeting']['listingCondition'])
         except TypeError:
             listingCondition.append(np.nan)
         except KeyError:
             listingCondition.append(np.nan)
         try:
-            listingStatus.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            listingStatus.append(parsed_json['props']['pageProps']['data']['listing']\
                              ['adTargeting']['listingStatus'])
         except TypeError:
             listingStatus.append(np.nan)
         except KeyError:
             listingStatus.append(np.nan)
         try:
-            RoomCount.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            RoomCount.append(parsed_json['props']['pageProps']['data']['listing']\
                         ['counts'])
         except TypeError:
             RoomCount.append(np.nan)
         except KeyError:
             RoomCount.append(np.nan)
         try:
-            price.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            price.append(parsed_json['props']['pageProps']['data']['listing']\
                      ['adTargeting']['price'])
         except TypeError:
             price.append(np.nan)
         except KeyError:
             price.append(np.nan)
         try:
-            propertyType.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            propertyType.append(parsed_json['props']['pageProps']['data']['listing']\
                             ['adTargeting']['propertyType'])
         except TypeError:
             propertyType.append(np.nan)
         except KeyError:
             propertyType.append(np.nan)
         try:
-            floorArea.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            floorArea.append(parsed_json['props']['pageProps']['data']['listing']\
                           ['floorArea'])
         except TypeError:
             floorArea.append(np.nan)
         except KeyError:
             floorArea.append(np.nan)
         try:
-            tenure.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            tenure.append(parsed_json['props']['pageProps']['data']['listing']\
                       ['adTargeting']['tenure'])
         except TypeError:
             tenure.append(np.nan)
         except KeyError:
             tenure.append(np.nan)
         try:
-            detailedDescription.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            detailedDescription.append(parsed_json['props']['pageProps']['data']['listing']\
                                    ['detailedDescription'])
         except TypeError:
             detailedDescription.append(np.nan)
         except KeyError:
             detailedDescription.append(np.nan)
         try:
-            features.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            features.append(parsed_json['props']['pageProps']['data']['listing']\
                         ['features']['bullets'])
         except TypeError:
             features.append(np.nan)
         except KeyError:
             features.append(np.nan)
         try:
-            furnishedState.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            furnishedState.append(parsed_json['props']['pageProps']['data']['listing']\
                               ['features']['flags']['furnishedState'])
         except TypeError:
             furnishedState.append(np.nan)
         except KeyError:
             furnishedState.append(np.nan)
         try:
-            title.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            title.append(parsed_json['props']['pageProps']['data']['listing']\
                          ['title'])
         except TypeError:
             title.append(np.nan)
         except KeyError:
             title.append(np.nan)
         try:
-            latitude.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            latitude.append(parsed_json['props']['pageProps']['data']['listing']\
                         ['location']['coordinates']['latitude'])
         except TypeError:
             latitude.append(np.nan)
         except KeyError:
             latitude.append(np.nan)
         try:
-            longitude.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            longitude.append(parsed_json['props']['pageProps']['data']['listing']\
                          ['location']['coordinates']['longitude'])
         except TypeError:
             longitude.append(np.nan)
         except KeyError:
             longitude.append(np.nan)
         try:
-            statusSummary.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            statusSummary.append(parsed_json['props']['pageProps']['data']['listing']\
                              ['statusSummary']['label'])
         except TypeError:
             statusSummary.append(np.nan)
         except KeyError:
             statusSummary.append(np.nan)
         try:
-            isAuction.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            isAuction.append(parsed_json['props']['pageProps']['data']['listing']\
                          ['pricing']['isAuction'])
         except TypeError:
             isAuction.append(np.nan)
         except KeyError:
             isAuction.append(np.nan)
         try:
-            priceHistory.append(parsed_json['props']['initialProps']['pageProps']['data']['listing']\
+            priceHistory.append(parsed_json['props']['pageProps']['data']['listing']\
                             ['priceHistory'])
         except TypeError:
             priceHistory.append(np.nan)
@@ -484,7 +484,7 @@ def extract_feature(string, patterns):
 
     for pat in patterns:
         if re.search(pat, string.lower()) != None:
-            feature = re.search(pat, string).groups()[0]
+            feature = re.search(pat, string.lower()).groups()[0]
             break
     
     return feature
